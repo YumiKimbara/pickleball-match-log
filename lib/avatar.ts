@@ -1,5 +1,5 @@
 import { createAvatar } from '@dicebear/core';
-import { initials } from '@dicebear/collection';
+import { personas } from '@dicebear/collection';
 
 export function getAvatarUrl(
   photoUrl: string | null,
@@ -9,11 +9,13 @@ export function getAvatarUrl(
   if (photoUrl) return photoUrl;
 
   // Use email as seed if available, otherwise use name
+  // This ensures the same person always gets the same avatar
   const seed = email || name;
 
-  const avatar = createAvatar(initials, {
+  const avatar = createAvatar(personas, {
     seed,
-    backgroundColor: ['00897b', '00acc1', '039be5', '3f51b5', '5e35b1', '8e24aa'],
+    // Friendly illustrated style with consistent generation
+    size: 128,
   });
 
   return avatar.toDataUri();

@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 import QRCodeComponent from "./QRCodeComponent";
 import Link from "next/link";
 
-export default async function OpponentQRPage({ params }: { params: { id: string } }) {
+export default async function OpponentQRPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await requireAuth();
-  const opponentId = parseInt(params.id);
+  const { id } = await params;
+  const opponentId = parseInt(id);
 
   const opponent = await db.getOpponentById(opponentId);
   if (!opponent) notFound();

@@ -17,11 +17,17 @@ export default async function NewOpponentPage() {
 
     let photoUrl: string | null = null;
 
-    if (photo && photo.size > 0) {
-      const blob = await put(`opponents/${Date.now()}-${photo.name}`, photo, {
-        access: "public",
-      });
-      photoUrl = blob.url;
+    // Only attempt photo upload if Vercel Blob is configured
+    if (photo && photo.size > 0 && process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        const blob = await put(`opponents/${Date.now()}-${photo.name}`, photo, {
+          access: "public",
+        });
+        photoUrl = blob.url;
+      } catch (error) {
+        console.error("Failed to upload photo:", error);
+        // Continue without photo
+      }
     }
 
     await db.createOpponent(name, email, session.user.id, photoUrl);

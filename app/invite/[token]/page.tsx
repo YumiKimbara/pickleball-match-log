@@ -3,8 +3,9 @@ import { signIn } from "@/lib/auth";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
-export default async function InvitePage({ params }: { params: { token: string } }) {
-  const invite = await db.getInviteToken(params.token);
+export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params;
+  const invite = await db.getInviteToken(token);
 
   if (!invite) {
     return (
@@ -68,7 +69,7 @@ export default async function InvitePage({ params }: { params: { token: string }
           <form
             action={async () => {
               "use server";
-              await signIn("google", { redirectTo: `/invite/${params.token}/complete` });
+              await signIn("google", { redirectTo: `/invite/${token}/complete` });
             }}
           >
             <button
@@ -98,7 +99,7 @@ export default async function InvitePage({ params }: { params: { token: string }
             action={async (formData) => {
               "use server";
               const email = formData.get("email") as string;
-              await signIn("resend", { email, redirectTo: `/invite/${params.token}/complete` });
+              await signIn("resend", { email, redirectTo: `/invite/${token}/complete` });
             }}
           >
             <div className="space-y-3">

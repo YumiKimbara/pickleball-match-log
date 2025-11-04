@@ -153,6 +153,13 @@ export const db = {
     `;
   },
 
+  async updateOpponentPhoto(opponentId: number, photoUrl: string | null): Promise<void> {
+    await sql`
+      UPDATE opponents SET photo_url = ${photoUrl}, updated_at = NOW()
+      WHERE id = ${opponentId}
+    `;
+  },
+
   // Invite Tokens
   async createInviteToken(
     opponentId: number | null,

@@ -6,5 +6,6 @@ const withPWA = require('next-pwa')({
 });
 
 module.exports = withPWA({
-  // Your Next.js config
+  // Empty turbopack config to silence the warning
+  turbopack: {},
 });

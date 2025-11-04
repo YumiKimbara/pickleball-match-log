@@ -1,7 +1,7 @@
 "use client";
 
-import QRCode from "qrcode.react";
+import { QRCodeCanvas } from "qrcode.react";
 
 export default function QRCodeComponent({ value }: { value: string }) {
-  return <QRCode value={value} size={200} level="M" />;
+  return <QRCodeCanvas value={value} size={200} level="M" />;
 }
