@@ -11,8 +11,8 @@ interface Opponent {
 
 interface User {
   id: number;
-  name: string | null;
-  email: string;
+  name?: string | null;
+  email?: string | null;
 }
 
 export default function MatchLogger({ user, opponents }: { user: User; opponents: Opponent[] }) {
@@ -24,6 +24,7 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
   const [winBy] = useState(2);
   const [history, setHistory] = useState<{ scoreA: number; scoreB: number }[]>([]);
   const [isGameEnding, setIsGameEnding] = useState(false);
+  const [gameResult, setGameResult] = useState<{ won: boolean; eloChange: number } | null>(null);
 
   if (!selectedOpponent) {
     return (
@@ -90,7 +91,6 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
       setIsGameEnding(true);
       return;
     }
-
     const formData = new FormData();
     formData.append("opponentId", selectedOpponent.id.toString());
     formData.append("scoreA", scoreA.toString());
@@ -104,7 +104,9 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
 
     if (response.ok) {
       const match = await response.json();
-      router.push(`/dashboard/match/${match.id}/photo`);
+      const won = scoreA > scoreB;
+      const eloChange = match.elo_change_a || 0;
+      setGameResult({ won, eloChange });
     }
   };
 
@@ -122,9 +124,39 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
 
     if (response.ok) {
       const match = await response.json();
-      router.push(`/dashboard/match/${match.id}/photo`);
+      const won = scoreA > scoreB;
+      const eloChange = match.elo_change_a || 0;
+      setGameResult({ won, eloChange });
+      setIsGameEnding(false);
     }
   };
+
+  if (gameResult) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-sm">
+          <div className={`text-6xl mb-4`}>
+            {gameResult.won ? "🏆" : "😔"}
+          </div>
+          <h2 className={`text-3xl font-bold mb-4 ${gameResult.won ? "text-green-600" : "text-red-600"}`}>
+            {gameResult.won ? "Victory!" : "Defeat"}
+          </h2>
+          <p className="text-gray-600 mb-2 text-xl">
+            {scoreA} - {scoreB}
+          </p>
+          <p className={`text-lg font-semibold mb-6 ${gameResult.eloChange >= 0 ? "text-green-600" : "text-red-600"}`}>
+            ELO {gameResult.eloChange >= 0 ? "+" : ""}{gameResult.eloChange}
+          </p>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="w-full h-12 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (isGameEnding) {
     return (

@@ -8,4 +8,12 @@ const withPWA = require('next-pwa')({
 module.exports = withPWA({
   // Empty turbopack config to silence the warning
   turbopack: {},
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.public.blob.vercel-storage.com',
+      },
+    ],
+  },
 });

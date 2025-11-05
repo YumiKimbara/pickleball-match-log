@@ -2,6 +2,7 @@ import { requireAuth } from "@/lib/auth-guards";
 import { signOut } from "@/lib/auth";
 import { db } from "@/lib/db";
 import Link from "next/link";
+import RecentMatches from "./RecentMatches";
 
 async function handleSignOut() {
   'use server'
@@ -71,62 +72,30 @@ export default async function DashboardPage() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-3 gap-3 mb-8">
           <Link
             href="/dashboard/match/new"
-            className="h-24 bg-green-600 text-white rounded-xl font-bold text-lg flex items-center justify-center hover:bg-green-700"
+            className="h-24 bg-green-600 text-white rounded-xl font-bold text-base flex items-center justify-center hover:bg-green-700"
           >
             + New Match
           </Link>
           <Link
             href="/dashboard/opponents"
-            className="h-24 bg-blue-600 text-white rounded-xl font-bold text-lg flex items-center justify-center hover:bg-blue-700"
+            className="h-24 bg-blue-600 text-white rounded-xl font-bold text-base flex items-center justify-center hover:bg-blue-700"
           >
             Opponents
+          </Link>
+          <Link
+            href="/dashboard/stats"
+            className="h-24 bg-purple-600 text-white rounded-xl font-bold text-base flex items-center justify-center hover:bg-purple-700"
+          >
+            Stats
           </Link>
         </div>
 
         {/* Recent Matches */}
         <h2 className="text-xl font-bold mb-4">Recent Matches</h2>
-        {matches.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-500">
-            No matches yet. Start logging your games!
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {matches.slice(0, 10).map((match) => {
-              const isUserPlayerA = match.player_a_type === "user" && match.player_a_id === session.user.id;
-              const userScore = isUserPlayerA ? match.score_a : match.score_b;
-              const oppScore = isUserPlayerA ? match.score_b : match.score_a;
-              const won = match.winner_id === session.user.id && match.winner_type === "user";
-              const eloChange = isUserPlayerA ? match.elo_change_a : match.elo_change_b;
-
-              return (
-                <div
-                  key={match.id}
-                  className={`bg-white rounded-xl shadow-sm p-4 border-l-4 ${
-                    won ? "border-green-600" : "border-red-600"
-                  }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <div className="font-semibold">
-                        {won ? "Won" : "Lost"} {userScore}-{oppScore}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        ELO {eloChange && eloChange > 0 ? "+" : ""}
-                        {eloChange}
-                      </div>
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {new Date(match.played_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <RecentMatches matches={matches} userId={session.user.id} />
       </div>
     </div>
   );
