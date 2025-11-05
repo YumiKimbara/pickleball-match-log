@@ -1,6 +1,12 @@
 import { requireAuth } from "@/lib/auth-guards";
+import { signOut } from "@/lib/auth";
 import { db } from "@/lib/db";
 import Link from "next/link";
+
+async function handleSignOut() {
+  'use server'
+  await signOut({ redirectTo: '/auth/signin' });
+}
 
 export default async function DashboardPage() {
   const session = await requireAuth();
@@ -17,7 +23,17 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+          <div className="flex justify-between items-start mb-2">
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <form action={handleSignOut}>
+              <button
+                type="submit"
+                className="text-sm text-gray-600 hover:text-red-600 underline"
+              >
+                Sign Out
+              </button>
+            </form>
+          </div>
           <p className="text-gray-600">
             Welcome, {session.user.name || session.user.email}!
           </p>
