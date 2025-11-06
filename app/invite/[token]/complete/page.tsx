@@ -2,9 +2,10 @@ import { requireAuth } from "@/lib/auth-guards";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 
-export default async function InviteCompletePage({ params }: { params: { token: string } }) {
+export default async function InviteCompletePage({ params }: { params: Promise<{ token: string }> }) {
   const session = await requireAuth();
-  const invite = await db.getInviteToken(params.token);
+  const { token } = await params;
+  const invite = await db.getInviteToken(token);
 
   if (!invite || invite.redeemed_at || new Date(invite.expires_at) < new Date()) {
     redirect("/dashboard");

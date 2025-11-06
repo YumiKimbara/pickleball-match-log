@@ -1,6 +1,5 @@
 import { requireAuth } from "@/lib/auth-guards";
 import { db } from "@/lib/db";
-import { calculateEloChange } from "@/lib/elo";
 import EloChart from "./EloChart";
 import WinRateChart from "./WinRateChart";
 import HeadToHeadStats from "./HeadToHeadStats";
@@ -12,48 +11,40 @@ export default async function StatsPage() {
   const session = await requireAuth();
   const allMatchesDesc = await db.getMatchesByPlayer(session.user.id, "user");
   
+  // Get current user data for actual ELO
+  const currentUser = await db.getUserById(session.user.id);
+  const actualCurrentElo = currentUser?.elo || session.user.elo;
+  
   // Reverse to get oldest first for cumulative calculations
   const allMatches = [...allMatchesDesc].reverse();
 
-  // Calculate ELO history with fallback for missing ELO changes
-  let userElo = STARTING_ELO;
-  const opponentElos: Record<string, number> = {};
+  // Calculate ELO history - use database ELO as final value (source of truth)
+  const dbElo = Math.round(Number(actualCurrentElo));
+  let calculatedElo = STARTING_ELO;
   const eloHistory = [];
   
+  // Calculate cumulative ELO from match changes
   for (let index = 0; index < allMatches.length; index++) {
     const match = allMatches[index];
     const isUserPlayerA = match.player_a_type === "user" && match.player_a_id === session.user.id;
     
-    // Try to use stored ELO change, otherwise calculate it
-    let eloChange = isUserPlayerA ? match.elo_change_a : match.elo_change_b;
+    const eloChangeRaw = isUserPlayerA ? match.elo_change_a : match.elo_change_b;
+    const eloChange = typeof eloChangeRaw === 'number' 
+      ? eloChangeRaw 
+      : (typeof eloChangeRaw === 'string' ? parseFloat(eloChangeRaw) : 0);
     
-    if (eloChange === null || eloChange === undefined) {
-      // Fallback: calculate ELO change
-      const opponentId = isUserPlayerA ? match.player_b_id : match.player_a_id;
-      const opponentType = isUserPlayerA ? match.player_b_type : match.player_a_type;
-      const opponentKey = `${opponentType}-${opponentId}`;
-      
-      if (!opponentElos[opponentKey]) {
-        if (opponentType === 'opponent') {
-          const opp = await db.getOpponentById(opponentId);
-          opponentElos[opponentKey] = opp?.elo || STARTING_ELO;
-        } else {
-          const usr = await db.getUserById(opponentId);
-          opponentElos[opponentKey] = usr?.elo || STARTING_ELO;
-        }
-      }
-      
-      const userWon = match.winner_id === session.user.id && match.winner_type === "user";
-      eloChange = calculateEloChange(userElo, opponentElos[opponentKey], userWon);
-    }
-    
-    userElo += eloChange;
+    calculatedElo += eloChange;
 
     eloHistory.push({
       date: new Date(match.played_at).toLocaleDateString(),
-      elo: Math.round(userElo),
+      elo: Math.round(calculatedElo),
       matchNumber: index + 1,
     });
+  }
+  
+  // Adjust final ELO to match database (correct any historical discrepancies)
+  if (eloHistory.length > 0 && eloHistory[eloHistory.length - 1].elo !== dbElo) {
+    eloHistory[eloHistory.length - 1].elo = dbElo;
   }
 
   // Calculate win rate trends

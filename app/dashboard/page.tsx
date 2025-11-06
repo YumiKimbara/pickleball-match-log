@@ -13,6 +13,10 @@ export default async function DashboardPage() {
   const session = await requireAuth();
   const matches = await db.getMatchesByPlayer(session.user.id, "user");
   const inProgress = await db.getInProgressMatch(session.user.id);
+  
+  // Get fresh user data for current ELO
+  const currentUser = await db.getUserById(session.user.id);
+  const currentElo = currentUser?.elo || session.user.elo;
 
   const wins = matches.filter(
     (m) => m.winner_id === session.user.id && m.winner_type === "user"
@@ -38,7 +42,7 @@ export default async function DashboardPage() {
           <p className="text-gray-600">
             Welcome, {session.user.name || session.user.email}!
           </p>
-          <p className="text-gray-600">ELO: {Math.round(session.user.elo)}</p>
+          <p className="text-gray-600">ELO: {Math.round(Number(currentElo))}</p>
           <p className="text-sm text-gray-500">Role: {session.user.role}</p>
         </div>
 

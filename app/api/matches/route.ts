@@ -19,13 +19,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Opponent not found" }, { status: 404 });
     }
 
+    // Get current user data for fresh ELO (session ELO is stale)
+    const currentUser = await db.getUserById(session.user.id);
+    if (!currentUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     // Determine winner
     const userWon = scoreA > scoreB;
     const winnerId = userWon ? session.user.id : opponentId;
     const winnerType = userWon ? "user" : "opponent";
 
-    // Calculate ELO changes
-    const userElo = Number(session.user.elo);
+    // Calculate ELO changes using CURRENT ELO from database
+    const userElo = Number(currentUser.elo);
     const opponentElo = Number(opponent.elo);
     const { newRatingA, newRatingB, changeA, changeB } = updateElo(userElo, opponentElo, userWon);
 

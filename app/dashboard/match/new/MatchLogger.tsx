@@ -24,7 +24,7 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
   const [winBy] = useState(2);
   const [history, setHistory] = useState<{ scoreA: number; scoreB: number }[]>([]);
   const [isGameEnding, setIsGameEnding] = useState(false);
-  const [gameResult, setGameResult] = useState<{ won: boolean; eloChange: number } | null>(null);
+  const [gameResult, setGameResult] = useState<{ won: boolean; eloChange: number; matchId: number } | null>(null);
 
   if (!selectedOpponent) {
     return (
@@ -106,7 +106,7 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
       const match = await response.json();
       const won = scoreA > scoreB;
       const eloChange = match.elo_change_a || 0;
-      setGameResult({ won, eloChange });
+      setGameResult({ won, eloChange, matchId: match.id });
     }
   };
 
@@ -126,7 +126,7 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
       const match = await response.json();
       const won = scoreA > scoreB;
       const eloChange = match.elo_change_a || 0;
-      setGameResult({ won, eloChange });
+      setGameResult({ won, eloChange, matchId: match.id });
       setIsGameEnding(false);
     }
   };
@@ -147,12 +147,20 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
           <p className={`text-lg font-semibold mb-6 ${gameResult.eloChange >= 0 ? "text-green-600" : "text-red-600"}`}>
             ELO {gameResult.eloChange >= 0 ? "+" : ""}{gameResult.eloChange}
           </p>
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="w-full h-12 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
-          >
-            Back to Dashboard
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => router.push(`/dashboard/match/${(gameResult as any).matchId}/photo`)}
+              className="w-full h-12 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
+            >
+              📷 Add Photo
+            </button>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="w-full h-12 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+            >
+              Back to Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );

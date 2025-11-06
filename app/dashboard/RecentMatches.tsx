@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 interface Match {
   id: number;
@@ -51,9 +52,10 @@ export default function RecentMatches({ matches, userId }: Props) {
           const eloChange = isUserPlayerA ? match.elo_change_a : match.elo_change_b;
 
           return (
-            <div
+            <Link
               key={match.id}
-              className={`bg-white rounded-xl shadow-sm p-4 border-l-4 ${
+              href={`/dashboard/match/${match.id}`}
+              className={`block bg-white rounded-xl shadow-sm p-4 border-l-4 hover:shadow-md transition-shadow ${
                 won ? "border-green-600" : "border-red-600"
               }`}
             >
@@ -71,7 +73,7 @@ export default function RecentMatches({ matches, userId }: Props) {
                   {new Date(match.played_at).toLocaleDateString()}
                 </div>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

@@ -37,10 +37,11 @@ export default function EloChart({ data }: Props) {
         <Tooltip
           content={({ active, payload }) => {
             if (active && payload && payload.length) {
+              const eloValue = payload[0].payload.elo;
               return (
                 <div className="bg-white border border-gray-300 rounded p-2 shadow">
                   <p className="font-bold">Match #{payload[0].payload.matchNumber}</p>
-                  <p className="text-sm">ELO: {payload[0].value}</p>
+                  <p className="text-sm">ELO: {Math.round(eloValue)}</p>
                   <p className="text-sm text-gray-600">{payload[0].payload.date}</p>
                 </div>
               );
