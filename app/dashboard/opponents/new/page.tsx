@@ -46,21 +46,21 @@ export default async function NewOpponentPage() {
 
         <form action={createOpponent} className="bg-white rounded-xl shadow-md p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Name *</label>
+            <label className="block text-sm font-semibold mb-2 text-gray-900">Name *</label>
             <input
               type="text"
               name="name"
               required
-              className="w-full h-12 px-4 border border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
+              className="w-full h-14 px-4 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-lg"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Email (optional)</label>
+            <label className="block text-sm font-semibold mb-2 text-gray-900">Email (optional)</label>
             <input
               type="email"
               name="email"
-              className="w-full h-12 px-4 border border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
+              className="w-full h-14 px-4 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-lg"
             />
             <p className="text-xs text-gray-500 mt-1">
               If provided, they can claim this profile via QR invite
@@ -68,19 +68,19 @@ export default async function NewOpponentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Photo (optional)</label>
+            <label className="block text-sm font-medium mb-2">📷 Photo (optional)</label>
             <input
               type="file"
               name="photo"
               accept="image/*"
               capture="environment"
-              className="w-full"
+              className="w-full h-14 px-4 border-2 border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full h-12 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 active:bg-green-800"
+            className="w-full h-14 bg-green-600 text-white rounded-lg font-bold text-lg hover:bg-green-700 active:bg-green-800 shadow-lg"
           >
             Create Opponent
           </button>

@@ -16,7 +16,7 @@ export async function GET() {
   }
 }
 
-// Delete opponent
+// Delete opponent (admin only - ownership already enforced by requireAdmin)
 export async function DELETE(request: Request) {
   try {
     await requireAdmin();
@@ -26,6 +26,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Opponent ID required' }, { status: 400 });
     }
 
+    // Admin can delete any opponent
     await db.deleteOpponent(id);
     return NextResponse.json({ success: true });
   } catch (error: any) {

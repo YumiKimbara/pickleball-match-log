@@ -74,7 +74,12 @@ export default function PhotoUploadModal({
       router.refresh();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to upload photo");
+      const errorMessage = err instanceof Error ? err.message : "Failed to upload photo";
+      if (errorMessage.includes('network') || errorMessage.includes('offline') || errorMessage.includes('fetch')) {
+        setError("Network error. Please check your connection and try again. You can also retry later - the opponent info is saved.");
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsUploading(false);
     }

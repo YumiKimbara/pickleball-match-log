@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate PWA Icons</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    canvas { border: 1px solid #ccc; margin: 10px; }
+    button { padding: 10px 20px; margin: 5px; background: #16a34a; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #15803d; }
+  </style>
+</head>
+<body>
+  <h1>Generate Pickleball PWA Icons</h1>
+  <p>Click the buttons below to download the icon files:</p>
+  
+  <div>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <button onclick="downloadIcon(192)">Download icon-192.png</button>
+  </div>
+  
+  <div>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    <button onclick="downloadIcon(512)">Download icon-512.png</button>
+  </div>
+
+  <script>
+    function drawIcon(size) {
+      const canvas = document.getElementById(`canvas${size}`);
+      const ctx = canvas.getContext('2d');
+      
+      // Green background
+      ctx.fillStyle = '#16a34a';
+      ctx.fillRect(0, 0, size, size);
+      
+      // White "PB" text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${size * 0.35}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('PB', size / 2, size / 2);
+    }
+    
+    function downloadIcon(size) {
+      const canvas = document.getElementById(`canvas${size}`);
+      const link = document.createElement('a');
+      link.download = `icon-${size}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+    
+    // Draw icons on load
+    drawIcon(192);
+    drawIcon(512);
+  </script>
+</body>
+</html>
+

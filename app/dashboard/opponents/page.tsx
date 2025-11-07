@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getAvatarUrl } from "@/lib/avatar";
 import Link from "next/link";
 import OpponentCard from "./OpponentCard";
+import OpponentsCache from "./OpponentsCache";
 
 export default async function OpponentsPage() {
   const session = await requireAuth();
@@ -13,6 +14,7 @@ export default async function OpponentsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
+      <OpponentsCache opponents={opponents} />
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>

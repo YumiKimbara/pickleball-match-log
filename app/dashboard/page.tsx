@@ -3,6 +3,7 @@ import { signOut } from "@/lib/auth";
 import { db } from "@/lib/db";
 import Link from "next/link";
 import RecentMatches from "./RecentMatches";
+import ResumeMatchBanner from "./ResumeMatchBanner";
 
 async function handleSignOut() {
   'use server'
@@ -12,7 +13,6 @@ async function handleSignOut() {
 export default async function DashboardPage() {
   const session = await requireAuth();
   const matches = await db.getMatchesByPlayer(session.user.id, "user");
-  const inProgress = await db.getInProgressMatch(session.user.id);
   
   // Get fresh user data for current ELO
   const currentUser = await db.getUserById(session.user.id);
@@ -72,18 +72,8 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Resume Match Banner */}
-        {inProgress && (
-          <div className="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-4 mb-6">
-            <h3 className="font-bold mb-2">Resume last match?</h3>
-            <Link
-              href="/dashboard/match/resume"
-              className="inline-block h-10 px-6 bg-yellow-600 text-white rounded-lg font-semibold hover:bg-yellow-700"
-            >
-              Resume
-            </Link>
-          </div>
-        )}
+        {/* Resume Match Banner (checks localStorage) */}
+        <ResumeMatchBanner />
 
         {/* Quick Actions */}
         <div className="grid grid-cols-3 gap-3 mb-8">

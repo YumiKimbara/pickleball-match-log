@@ -1,0 +1,14 @@
+This is a placeholder for icon-512.png
+
+To create a real PWA icon:
+1. Create a 512x512px PNG with your app logo/design
+2. Save as public/icon-512.png
+3. Delete this placeholder file
+
+For now, you can use an online tool like:
+- https://realfavicongenerator.net/
+- https://www.favicon-generator.org/
+
+Quick text-based placeholder:
+Generate a simple icon with ImageMagick:
+  convert -size 512x512 xc:green -pointsize 180 -fill white -gravity center -annotate +0+0 "PB" icon-512.png

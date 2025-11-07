@@ -17,12 +17,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      allowDangerousEmailAccountLinking: true, // Allow linking accounts with same email
     }),
     Resend({
       apiKey: process.env.RESEND_API_KEY!,
-      from: "onboarding@resend.dev", // Resend's test domain
-      allowDangerousEmailAccountLinking: true, // Allow linking accounts with same email
+      from: "Pickleball Tracker <onboarding@resend.dev>",
     }),
   ],
   callbacks: {
@@ -77,12 +75,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
     },
     async jwt({ token, user, trigger, session }) {
-      if (user) {
-        const dbUser = await db.getUserByEmail(user.email!);
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.role = dbUser.role;
-          token.elo = dbUser.elo;
+      if (user?.email) {
+        try {
+          const dbUser = await db.getUserByEmail(user.email);
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.role = dbUser.role;
+            token.elo = dbUser.elo;
+          } else {
+            console.error('JWT: User not found in DB:', user.email);
+            // Set defaults if user not found
+            token.id = 0;
+            token.role = 'user';
+            token.elo = 1500;
+          }
+        } catch (error) {
+          console.error('JWT callback error:', error);
+          token.id = 0;
+          token.role = 'user';
+          token.elo = 1500;
         }
       }
 
@@ -95,9 +106,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as number;
-        session.user.role = token.role as 'admin' | 'user';
-        session.user.elo = token.elo as number;
+        session.user.id = (token.id as number) || 0;
+        session.user.role = (token.role as 'admin' | 'user') || 'user';
+        session.user.elo = (token.elo as number) || 1500;
       }
       return session;
     },

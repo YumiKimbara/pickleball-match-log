@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface Opponent {
@@ -15,6 +15,18 @@ interface User {
   email?: string | null;
 }
 
+interface MatchState {
+  opponentId: number;
+  opponentName: string;
+  scoreA: number;
+  scoreB: number;
+  playTo: number;
+  history: { scoreA: number; scoreB: number }[];
+  timestamp: number;
+}
+
+const MATCH_STORAGE_KEY = 'pickleball_match_in_progress';
+
 export default function MatchLogger({ user, opponents }: { user: User; opponents: Opponent[] }) {
   const router = useRouter();
   const [selectedOpponent, setSelectedOpponent] = useState<Opponent | null>(null);
@@ -25,6 +37,46 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
   const [history, setHistory] = useState<{ scoreA: number; scoreB: number }[]>([]);
   const [isGameEnding, setIsGameEnding] = useState(false);
   const [gameResult, setGameResult] = useState<{ won: boolean; eloChange: number; matchId: number } | null>(null);
+
+  // Load saved match on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(MATCH_STORAGE_KEY);
+    if (saved) {
+      try {
+        const state: MatchState = JSON.parse(saved);
+        const opponent = opponents.find(o => o.id === state.opponentId);
+        if (opponent) {
+          setSelectedOpponent(opponent);
+          setScoreA(state.scoreA);
+          setScoreB(state.scoreB);
+          setPlayTo(state.playTo);
+          setHistory(state.history);
+        }
+      } catch (e) {
+        console.error('Failed to restore match:', e);
+      }
+    }
+  }, [opponents]);
+
+  // Save match state whenever it changes
+  useEffect(() => {
+    if (selectedOpponent && !gameResult) {
+      const state: MatchState = {
+        opponentId: selectedOpponent.id,
+        opponentName: selectedOpponent.name,
+        scoreA,
+        scoreB,
+        playTo,
+        history,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(MATCH_STORAGE_KEY, JSON.stringify(state));
+    }
+  }, [selectedOpponent, scoreA, scoreB, playTo, history, gameResult]);
+
+  const clearSavedMatch = () => {
+    localStorage.removeItem(MATCH_STORAGE_KEY);
+  };
 
   if (!selectedOpponent) {
     return (
@@ -60,13 +112,22 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
     );
   }
 
+  const hapticFeedback = (type: 'light' | 'medium' | 'heavy' = 'medium') => {
+    if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+      const patterns = { light: 10, medium: 20, heavy: 30 };
+      navigator.vibrate(patterns[type]);
+    }
+  };
+
   const addPointA = () => {
+    hapticFeedback('medium');
     const newScoreA = scoreA + 1;
     setScoreA(newScoreA);
     setHistory([...history, { scoreA: newScoreA, scoreB }]);
   };
 
   const addPointB = () => {
+    hapticFeedback('medium');
     const newScoreB = scoreB + 1;
     setScoreB(newScoreB);
     setHistory([...history, { scoreA, scoreB: newScoreB }]);
@@ -74,6 +135,7 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
 
   const undo = () => {
     if (history.length === 0) return;
+    hapticFeedback('light');
     const prev = history[history.length - 1];
     setScoreA(prev.scoreA);
     setScoreB(prev.scoreB);
@@ -106,6 +168,7 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
       const match = await response.json();
       const won = scoreA > scoreB;
       const eloChange = match.elo_change_a || 0;
+      clearSavedMatch();
       setGameResult({ won, eloChange, matchId: match.id });
     }
   };
@@ -126,6 +189,7 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
       const match = await response.json();
       const won = scoreA > scoreB;
       const eloChange = match.elo_change_a || 0;
+      clearSavedMatch();
       setGameResult({ won, eloChange, matchId: match.id });
       setIsGameEnding(false);
     }
@@ -195,12 +259,12 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <div className="p-4 bg-white shadow-sm">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="font-semibold">{user.name || user.email}</h2>
-          <h2 className="font-semibold">{selectedOpponent.name}</h2>
+      <div className="p-4 bg-white shadow-md">
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="font-bold text-lg text-gray-900">{user.name || user.email}</h2>
+          <h2 className="font-bold text-lg text-gray-900">{selectedOpponent.name}</h2>
         </div>
-        <div className="flex justify-center gap-8 text-5xl font-bold">
+        <div className="flex justify-center gap-8 text-6xl font-bold text-gray-900">
           <span>{scoreA}</span>
           <span className="text-gray-400">-</span>
           <span>{scoreB}</span>
@@ -211,19 +275,19 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
       <div className="p-4 bg-gray-50 flex gap-2 justify-center">
         <button
           onClick={() => setPlayTo(11)}
-          className={`px-4 py-2 rounded-lg font-medium ${playTo === 11 ? 'bg-green-600 text-white' : 'bg-white'}`}
+          className={`h-14 px-6 rounded-lg font-semibold text-lg ${playTo === 11 ? 'bg-green-600 text-white' : 'bg-white text-gray-900 border-2 border-gray-300'}`}
         >
           To 11
         </button>
         <button
           onClick={() => setPlayTo(15)}
-          className={`px-4 py-2 rounded-lg font-medium ${playTo === 15 ? 'bg-green-600 text-white' : 'bg-white'}`}
+          className={`h-14 px-6 rounded-lg font-semibold text-lg ${playTo === 15 ? 'bg-green-600 text-white' : 'bg-white text-gray-900 border-2 border-gray-300'}`}
         >
           To 15
         </button>
         <button
           onClick={() => setPlayTo(21)}
-          className={`px-4 py-2 rounded-lg font-medium ${playTo === 21 ? 'bg-green-600 text-white' : 'bg-white'}`}
+          className={`h-14 px-6 rounded-lg font-semibold text-lg ${playTo === 21 ? 'bg-green-600 text-white' : 'bg-white text-gray-900 border-2 border-gray-300'}`}
         >
           To 21
         </button>
@@ -233,31 +297,31 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
       <div className="flex-1" />
 
       {/* Bottom Controls */}
-      <div className="p-4 bg-white border-t-2 border-gray-200">
-        <div className="flex items-center justify-between gap-4 max-w-2xl mx-auto">
+      <div className="p-4 bg-white border-t-4 border-gray-300">
+        <div className="flex items-center justify-between gap-3 max-w-2xl mx-auto">
           <button
             onClick={addPointA}
-            className="flex-1 h-16 bg-blue-600 text-white rounded-xl font-bold text-lg active:bg-blue-700 touch-manipulation"
+            className="flex-1 h-20 bg-blue-600 text-white rounded-xl font-bold text-xl active:bg-blue-800 touch-manipulation shadow-lg"
           >
             +1 Me
           </button>
           <button
             onClick={undo}
             disabled={history.length === 0}
-            className="h-16 px-6 bg-gray-200 text-gray-800 rounded-xl font-bold disabled:opacity-50 active:bg-gray-300 touch-manipulation"
+            className="h-20 px-6 bg-gray-800 text-white rounded-xl font-bold disabled:opacity-30 disabled:bg-gray-400 active:bg-black touch-manipulation shadow-lg"
           >
             Undo
           </button>
           <button
             onClick={addPointB}
-            className="flex-1 h-16 bg-green-600 text-white rounded-xl font-bold text-lg active:bg-green-700 touch-manipulation"
+            className="flex-1 h-20 bg-green-600 text-white rounded-xl font-bold text-xl active:bg-green-800 touch-manipulation shadow-lg"
           >
             +1 Them
           </button>
         </div>
         <button
           onClick={endGame}
-          className="w-full h-14 mt-4 bg-red-600 text-white rounded-xl font-bold active:bg-red-700 touch-manipulation max-w-2xl mx-auto block"
+          className="w-full h-16 mt-4 bg-red-600 text-white rounded-xl font-bold text-lg active:bg-red-800 touch-manipulation shadow-lg max-w-2xl mx-auto block"
         >
           End Game
         </button>

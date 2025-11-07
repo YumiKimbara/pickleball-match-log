@@ -11,9 +11,30 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="max-w-md bg-white rounded-xl shadow-lg p-8 text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Invalid Invite</h1>
-          <p className="text-gray-600 mb-6">This invite link is invalid or has been removed.</p>
-          <a href="/" className="text-blue-600 underline">Go home</a>
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-red-600 mb-2">Invalid Invite</h1>
+          <p className="text-gray-600 mb-4">This invite link is invalid or has been removed by the administrator.</p>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-blue-900">
+              <strong>💡 Possible reasons:</strong> The link may be incorrect, or it was invalidated by an admin.
+            </p>
+          </div>
+
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-yellow-900 font-semibold mb-1">Need help?</p>
+            <p className="text-sm text-yellow-800">
+              Contact admin at <a href="mailto:a13158y@gmail.com" className="underline">a13158y@gmail.com</a>
+            </p>
+          </div>
+          
+          <a href="/" className="inline-block h-12 px-6 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
+            Go Home
+          </a>
         </div>
       </div>
     );
@@ -35,9 +56,30 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="max-w-md bg-white rounded-xl shadow-lg p-8 text-center">
-          <h1 className="text-2xl font-bold text-orange-600 mb-4">Invite Expired</h1>
-          <p className="text-gray-600 mb-6">This invite link has expired. Please request a new one.</p>
-          <a href="/" className="text-blue-600 underline">Go home</a>
+          <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-orange-600 mb-2">Invite Expired</h1>
+          <p className="text-gray-600 mb-4">This invite link has expired (invites are valid for 7 days).</p>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-blue-900">
+              <strong>💡 To get access:</strong> Ask the person who sent you this link to generate a new QR code from their Opponents page.
+            </p>
+          </div>
+
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-yellow-900 font-semibold mb-1">Need help?</p>
+            <p className="text-sm text-yellow-800">
+              Contact admin at <a href="mailto:a13158y@gmail.com" className="underline">a13158y@gmail.com</a>
+            </p>
+          </div>
+          
+          <a href="/" className="inline-block h-12 px-6 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
+            Go Home
+          </a>
         </div>
       </div>
     );
@@ -47,12 +89,8 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
   const opponent = invite.opponent_id ? await db.getOpponentById(invite.opponent_id) : null;
 
   if (session?.user) {
-    // User is already signed in, link them
-    if (opponent && !opponent.user_id) {
-      await db.linkOpponentToUser(opponent.id, session.user.id);
-    }
-    await db.redeemInviteToken(invite.id, session.user.id);
-    redirect("/dashboard");
+    // User is already signed in, redirect to confirmation page
+    redirect(`/invite/${token}/complete`);
   }
 
   return (

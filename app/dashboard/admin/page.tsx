@@ -82,6 +82,19 @@ export default async function AdminDashboard() {
         </div>
 
         <div className="border rounded-lg p-6 hover:shadow-lg transition-shadow">
+          <h2 className="text-xl font-semibold mb-2">🏓 Match Management</h2>
+          <p className="text-gray-600 mb-4">
+            Edit scores and delete matches
+          </p>
+          <Link 
+            href="/dashboard/admin/matches"
+            className="text-blue-600 hover:text-blue-800 font-medium"
+          >
+            Manage Matches →
+          </Link>
+        </div>
+
+        <div className="border rounded-lg p-6 hover:shadow-lg transition-shadow">
           <h2 className="text-xl font-semibold mb-2">📊 ELO Recalculation</h2>
           <p className="text-gray-600 mb-4">
             Recalculate ELO ratings for all users

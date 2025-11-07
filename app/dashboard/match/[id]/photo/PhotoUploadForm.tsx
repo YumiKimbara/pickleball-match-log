@@ -48,12 +48,22 @@ export default function PhotoUploadForm({ matchId }: PhotoUploadFormProps) {
 
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Failed to upload photo");
+      const errorMessage = err.message || "Failed to upload photo";
+      if (errorMessage.includes('network') || errorMessage.includes('offline') || errorMessage.includes('fetch')) {
+        setError("Network error. Your match is saved. You can retry uploading the photo later from your match history.");
+      } else {
+        setError(errorMessage);
+      }
       setIsUploading(false);
     }
   };
 
   const handleSkip = () => {
+    router.push("/dashboard");
+  };
+
+  const handleRetryLater = () => {
+    // Match is already saved, just go to dashboard
     router.push("/dashboard");
   };
 
@@ -79,33 +89,49 @@ export default function PhotoUploadForm({ matchId }: PhotoUploadFormProps) {
           accept="image/*"
           capture="environment"
           onChange={handleFileChange}
-          className="block w-full text-sm text-gray-500 mb-4
-            file:mr-4 file:py-2 file:px-4
+          className="block w-full h-14 text-base text-gray-700 mb-4 border-2 border-gray-300 rounded-lg px-2
+            file:mr-4 file:py-3 file:px-6
             file:rounded-full file:border-0
-            file:text-sm file:font-semibold
+            file:text-base file:font-bold
             file:bg-blue-50 file:text-blue-700
             hover:file:bg-blue-100"
         />
 
         {error && (
-          <p className="text-red-600 text-sm mb-4">{error}</p>
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600 font-semibold text-sm">{error}</p>
+            {error.includes('Network') && (
+              <p className="text-red-500 text-xs mt-2">
+                ✓ Don't worry - your match data is already saved!
+              </p>
+            )}
+          </div>
         )}
 
         <button
           onClick={handleUpload}
           disabled={!selectedFile || isUploading}
-          className="w-full h-12 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-16 bg-green-600 text-white rounded-lg font-bold text-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
         >
-          {isUploading ? "Uploading..." : "Upload Photo"}
+          {isUploading ? "Uploading..." : "📷 Upload Photo"}
         </button>
 
-        <button
-          onClick={handleSkip}
-          disabled={isUploading}
-          className="w-full h-12 mt-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 disabled:opacity-50"
-        >
-          Skip
-        </button>
+        {error && error.includes('Network') ? (
+          <button
+            onClick={handleRetryLater}
+            className="w-full h-16 mt-3 bg-blue-600 text-white rounded-lg font-bold text-lg hover:bg-blue-700 shadow-lg"
+          >
+            I'll Add Photo Later
+          </button>
+        ) : (
+          <button
+            onClick={handleSkip}
+            disabled={isUploading}
+            className="w-full h-16 mt-3 bg-gray-200 text-gray-900 rounded-lg font-bold text-lg hover:bg-gray-300 disabled:opacity-50 shadow-lg"
+          >
+            Skip
+          </button>
+        )}
       </div>
     </div>
   );

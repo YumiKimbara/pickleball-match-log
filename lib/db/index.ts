@@ -275,6 +275,40 @@ export const db = {
     `;
   },
 
+  async getAllMatches(): Promise<Match[]> {
+    const result = await sql<Match>`
+      SELECT * FROM matches ORDER BY played_at DESC
+    `;
+    return result.rows;
+  },
+
+  async deleteMatch(matchId: number): Promise<void> {
+    await sql`
+      DELETE FROM matches WHERE id = ${matchId}
+    `;
+  },
+
+  async updateMatchScores(matchId: number, scoreA: number, scoreB: number): Promise<void> {
+    // Determine new winner
+    const winnerId = scoreA > scoreB ? 
+      (await sql`SELECT player_a_id FROM matches WHERE id = ${matchId}`).rows[0]?.player_a_id :
+      (await sql`SELECT player_b_id FROM matches WHERE id = ${matchId}`).rows[0]?.player_b_id;
+    
+    const winnerType = scoreA > scoreB ?
+      (await sql`SELECT player_a_type FROM matches WHERE id = ${matchId}`).rows[0]?.player_a_type :
+      (await sql`SELECT player_b_type FROM matches WHERE id = ${matchId}`).rows[0]?.player_b_type;
+
+    await sql`
+      UPDATE matches 
+      SET score_a = ${scoreA}, 
+          score_b = ${scoreB},
+          winner_id = ${winnerId},
+          winner_type = ${winnerType},
+          updated_at = NOW()
+      WHERE id = ${matchId}
+    `;
+  },
+
   // In-progress matches
   async saveInProgressMatch(data: {
     userId: number;
@@ -354,6 +388,15 @@ export const db = {
     await sql`
       DELETE FROM invite_tokens WHERE id = ${tokenId}
     `;
+  },
+
+  async deleteExpiredInvites(): Promise<{ deletedCount: number }> {
+    const result = await sql`
+      DELETE FROM invite_tokens 
+      WHERE expires_at < NOW() - INTERVAL '7 days'
+      RETURNING id
+    `;
+    return { deletedCount: result.rowCount || 0 };
   },
 
   // User Management
