@@ -43,7 +43,17 @@ export default async function DashboardPage() {
             Welcome, {session.user.name || session.user.email}!
           </p>
           <p className="text-gray-600">ELO: {Math.round(Number(currentElo))}</p>
-          <p className="text-sm text-gray-500">Role: {session.user.role}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-gray-500">Role: {session.user.role}</p>
+            {session.user.role === 'admin' && (
+              <Link 
+                href="/dashboard/admin" 
+                className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+              >
+                Admin Panel
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Stats Cards */}

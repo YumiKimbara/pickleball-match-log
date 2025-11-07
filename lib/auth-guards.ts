@@ -1,5 +1,6 @@
 import { auth } from "./auth";
 import { redirect } from "next/navigation";
+import { ADMIN_EMAIL } from "./constants";
 
 export async function requireAuth() {
   const session = await auth();
@@ -19,4 +20,14 @@ export async function requireAdmin() {
 
 export async function getOptionalAuth() {
   return await auth();
+}
+
+// Utility to check if email is admin
+export function isAdminEmail(email: string): boolean {
+  return email === ADMIN_EMAIL;
+}
+
+// Utility to check if user object is admin
+export function isAdmin(user: { role: 'admin' | 'user' } | null | undefined): boolean {
+  return user?.role === 'admin';
 }
