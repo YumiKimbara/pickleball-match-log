@@ -53,6 +53,12 @@ export default function SignInPage() {
             </div>
           </div>
 
+          <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              ⚠️ <strong>Testing only:</strong> Magic link currently works with <code className="bg-yellow-100 px-1 rounded">a13158y@gmail.com</code> only. Use Google sign-in for other emails.
+            </p>
+          </div>
+
           <form
             action={async (formData) => {
               "use server";
