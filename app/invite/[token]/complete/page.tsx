@@ -19,9 +19,19 @@ async function confirmLinking(formData: FormData) {
     // Link the opponent to the user
     await db.linkOpponentToUser(opponent.id, session.user.id);
     
-    // Sync the user's email to the opponent record
-    if (session.user.email) {
-      await db.updateOpponentEmail(opponent.id, session.user.email);
+    // Sync the user's email to the opponent record (only if it doesn't conflict)
+    if (session.user.email && opponent.email !== session.user.email) {
+      try {
+        // Check if another opponent already has this email
+        const existingOpponent = await db.getOpponentByEmail(session.user.email);
+        if (!existingOpponent || existingOpponent.id === opponent.id) {
+          await db.updateOpponentEmail(opponent.id, session.user.email);
+        }
+        // If email already exists for a different opponent, skip update (keep existing email)
+      } catch (error) {
+        console.error('Failed to sync opponent email:', error);
+        // Continue even if email sync fails - the important part is the user link
+      }
     }
   }
 
@@ -74,6 +84,102 @@ export default async function InviteCompletePage({ params }: { params: Promise<{
         </div>
       </div>
     );
+  }
+
+  // Check if opponent email is already owned by a different user
+  if (opponent?.email) {
+    const existingUser = await db.getUserByEmail(opponent.email);
+    if (existingUser && existingUser.id !== session.user.id) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+          <div className="max-w-md bg-white rounded-xl shadow-lg p-8 text-center">
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold mb-2">Cannot Link Profile</h1>
+            <p className="text-gray-600 mb-4">
+              The email <strong>{opponent.email}</strong> is already registered to another user account.
+            </p>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-blue-900">
+                <strong>💡 What this means:</strong> This opponent profile belongs to someone else. You cannot link it to your account (<strong>{session.user.email}</strong>).
+              </p>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-yellow-900 font-semibold mb-2">🤔 This could mean:</p>
+              <ul className="text-xs text-yellow-800 text-left space-y-1">
+                <li>• You're trying to claim someone else's profile</li>
+                <li>• You may have multiple accounts with different emails</li>
+                <li>• Someone created a profile with your email by mistake</li>
+              </ul>
+            </div>
+
+            <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 mb-6">
+              <p className="text-sm text-gray-700 font-semibold mb-1">📧 Need help?</p>
+              <p className="text-sm text-gray-600">
+                Contact admin at <a href="mailto:a13158y@gmail.com" className="underline text-blue-600">a13158y@gmail.com</a> to resolve this issue.
+              </p>
+            </div>
+            
+            <Link href="/dashboard" className="inline-block h-12 px-8 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
+              Go to Dashboard
+            </Link>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // Check if current user's email conflicts with another opponent
+  if (session.user.email) {
+    const conflictingOpponent = await db.getOpponentByEmail(session.user.email);
+    if (conflictingOpponent && opponent && conflictingOpponent.id !== opponent.id) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+          <div className="max-w-md bg-white rounded-xl shadow-lg p-8 text-center">
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold mb-2">Email Conflict</h1>
+            <p className="text-gray-600 mb-4">
+              Your email <strong>{session.user.email}</strong> is already used by another opponent profile.
+            </p>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-blue-900">
+                <strong>💡 What this means:</strong> Another opponent profile already has your email. Each email can only be linked to one profile.
+              </p>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-yellow-900 font-semibold mb-2">🤔 Possible solutions:</p>
+              <ul className="text-xs text-yellow-800 text-left space-y-1">
+                <li>• You may already have an opponent profile linked</li>
+                <li>• Someone created a profile with your email</li>
+                <li>• Contact admin to merge duplicate profiles</li>
+              </ul>
+            </div>
+
+            <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 mb-6">
+              <p className="text-sm text-gray-700 font-semibold mb-1">📧 Need help?</p>
+              <p className="text-sm text-gray-600">
+                Contact admin at <a href="mailto:a13158y@gmail.com" className="underline text-blue-600">a13158y@gmail.com</a> to resolve this issue.
+              </p>
+            </div>
+            
+            <Link href="/dashboard" className="inline-block h-12 px-8 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
+              Go to Dashboard
+            </Link>
+          </div>
+        </div>
+      );
+    }
   }
 
   // Show confirmation screen

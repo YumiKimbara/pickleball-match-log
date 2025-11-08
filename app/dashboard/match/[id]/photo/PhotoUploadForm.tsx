@@ -43,7 +43,8 @@ export default function PhotoUploadForm({ matchId }: PhotoUploadFormProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to upload photo");
+        const data = await response.json();
+        throw new Error(data.error || "Failed to upload photo");
       }
 
       router.push("/dashboard");

@@ -30,14 +30,22 @@ export default async function DashboardPage() {
         <div className="mb-6">
           <div className="flex justify-between items-start mb-2">
             <h1 className="text-3xl font-bold">Dashboard</h1>
-            <form action={handleSignOut}>
-              <button
-                type="submit"
-                className="text-sm text-gray-600 hover:text-red-600 underline"
+            <div className="flex gap-3 items-center">
+              <Link
+                href="/dashboard/profile"
+                className="text-sm text-gray-600 hover:text-blue-600 underline"
               >
-                Sign Out
-              </button>
-            </form>
+                Edit Profile
+              </Link>
+              <form action={handleSignOut}>
+                <button
+                  type="submit"
+                  className="text-sm text-gray-600 hover:text-red-600 underline"
+                >
+                  Sign Out
+                </button>
+              </form>
+            </div>
           </div>
           <p className="text-gray-600">
             Welcome, {session.user.name || session.user.email}!

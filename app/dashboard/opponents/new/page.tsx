@@ -3,8 +3,14 @@ import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
-export default async function NewOpponentPage() {
+export default async function NewOpponentPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   const session = await requireAuth();
+  const params = await searchParams;
+  const error = params.error;
 
   async function createOpponent(formData: FormData) {
     "use server";
@@ -14,9 +20,22 @@ export default async function NewOpponentPage() {
       const name = formData.get("name") as string;
       const email = (formData.get("email") as string) || null;
 
+      // Check if email already exists (for better error message)
+      if (email) {
+        const existingOpponent = await db.getOpponentByEmail(email);
+        if (existingOpponent) {
+          redirect(`/dashboard/opponents/new?error=duplicate_email&email=${encodeURIComponent(email)}`);
+        }
+      }
+
       await db.createOpponent(name, email, session.user.id, null);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create opponent:", error);
+      // Check if it's a unique constraint violation
+      if (error?.code === '23505' && error?.constraint === 'opponents_email_key') {
+        const email = formData.get("email");
+        redirect(`/dashboard/opponents/new?error=duplicate_email&email=${encodeURIComponent(email as string)}`);
+      }
       throw error;
     }
     
@@ -32,6 +51,25 @@ export default async function NewOpponentPage() {
             ← Back to Opponents
           </Link>
         </div>
+
+        {error === 'duplicate_email' && (
+          <div className="mb-6 bg-red-50 border-2 border-red-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <svg className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <h3 className="font-semibold text-red-900 mb-1">Email Already in Use</h3>
+                <p className="text-sm text-red-800 mb-2">
+                  An opponent with this email already exists. Each email can only be used once.
+                </p>
+                <p className="text-xs text-red-700">
+                  💡 Try searching for the existing opponent or use a different email.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <form action={createOpponent} className="bg-white rounded-xl shadow-lg p-8 space-y-6">
           <div>

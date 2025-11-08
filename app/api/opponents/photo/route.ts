@@ -18,9 +18,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (!rateLimitResult.success) {
-      const resetIn = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000 / 60);
+      const resetInSeconds = Math.ceil((rateLimitResult.resetAt - Date.now()) / 1000);
+      const resetInMinutes = Math.ceil(resetInSeconds / 60);
+      const timeMessage = resetInSeconds < 60 
+        ? `${resetInSeconds} second${resetInSeconds !== 1 ? 's' : ''}`
+        : `${resetInMinutes} minute${resetInMinutes !== 1 ? 's' : ''}`;
+      
       return NextResponse.json(
-        { error: `Rate limit exceeded. Try again in ${resetIn} minutes.` },
+        { error: `Rate limit exceeded. Try again in ${timeMessage}.` },
         { status: 429 }
       );
     }

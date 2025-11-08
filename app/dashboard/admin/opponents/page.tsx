@@ -72,14 +72,12 @@ export default function AdminOpponentsPage() {
       });
 
       if (res.ok) {
-        setOpponents(opponents.map(o => 
-          o.id === id 
-            ? { ...o, name: editForm.name, email: editForm.email || null }
-            : o
-        ));
+        // Refresh the entire list to get updated data including linked_user_email
+        await fetchOpponents();
         setEditingId(null);
       } else {
-        alert('Failed to update opponent');
+        const data = await res.json();
+        alert(data.error || 'Failed to update opponent');
       }
     } catch (error) {
       console.error('Failed to update:', error);
@@ -165,7 +163,14 @@ export default function AdminOpponentsPage() {
                         onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                         className="border rounded px-2 py-1 w-full"
                         placeholder="(optional)"
+                        disabled={!!opponent.user_id}
+                        title={opponent.user_id ? "Cannot edit email for linked opponents" : ""}
                       />
+                      {opponent.user_id && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          Linked - email from user account
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {Math.round(Number(opponent.elo))}
@@ -206,12 +211,7 @@ export default function AdminOpponentsPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {opponent.linked_user_email ? (
-                        <div>
-                          <span className="text-green-600 font-medium">{opponent.linked_user_email}</span>
-                          {opponent.email && opponent.email !== opponent.linked_user_email && (
-                            <div className="text-xs text-gray-400">(saved: {opponent.email})</div>
-                          )}
-                        </div>
+                        <span className="text-green-600 font-medium">{opponent.linked_user_email}</span>
                       ) : (
                         opponent.email || '(none)'
                       )}

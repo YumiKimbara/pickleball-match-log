@@ -19,7 +19,7 @@ interface Opponent {
 }
 
 interface DuplicateUsers {
-  email: string;
+  key: string;
   users: User[];
 }
 
@@ -142,7 +142,7 @@ export default function AdminDuplicatesPage() {
             {duplicateUsers.map((group, idx) => (
               <div key={idx} className="bg-white rounded-lg shadow p-6">
                 <h3 className="font-semibold mb-3 text-lg">
-                  Duplicate Email: {group.email}
+                  {group.key}
                 </h3>
                 <div className="space-y-2">
                   {group.users.map((user) => (

@@ -115,6 +115,20 @@ export const db = {
     `;
   },
 
+  async updateUserName(userId: number, name: string): Promise<void> {
+    await sql`
+      UPDATE users SET name = ${name}, updated_at = NOW()
+      WHERE id = ${userId}
+    `;
+  },
+
+  async updateUserPhoto(userId: number, photoUrl: string | null): Promise<void> {
+    await sql`
+      UPDATE users SET photo_url = ${photoUrl}, updated_at = NOW()
+      WHERE id = ${userId}
+    `;
+  },
+
   // Opponents
   async createOpponent(
     name: string,

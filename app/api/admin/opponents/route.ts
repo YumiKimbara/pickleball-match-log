@@ -66,11 +66,23 @@ export async function PATCH(request: Request) {
       await db.updateOpponentName(id, name);
     }
     if (email !== undefined) {
-      await db.updateOpponentEmail(id, email);
+      try {
+        await db.updateOpponentEmail(id, email);
+      } catch (error: any) {
+        // Check if it's a unique constraint violation
+        if (error?.code === '23505' && error?.constraint === 'opponents_email_key') {
+          return NextResponse.json(
+            { error: `Email "${email}" is already used by another opponent` },
+            { status: 409 }
+          );
+        }
+        throw error;
+      }
     }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
+    console.error('Failed to update opponent:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to update opponent' },
       { status: 500 }

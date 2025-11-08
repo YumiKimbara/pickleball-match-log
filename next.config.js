@@ -16,4 +16,9 @@ module.exports = withPWA({
       },
     ],
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb', // Increase limit for photo uploads
+    },
+  },
 });
