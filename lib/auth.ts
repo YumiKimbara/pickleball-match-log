@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import * as NextAuthNamespace from "next-auth";
 import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
 import PostgresAdapter from "@auth/pg-adapter";
@@ -7,6 +7,9 @@ import { db } from "./db";
 import { ADMIN_EMAIL } from "./constants";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+// @ts-ignore - NextAuth v5 beta type issue
+const NextAuth = NextAuthNamespace.default || NextAuthNamespace;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PostgresAdapter(pool),
@@ -24,7 +27,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account, profile }: any) {
       try {
         if (!user.email) {
           console.error('Sign in failed: No email provided');
@@ -74,7 +77,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return true;
       }
     },
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger, session }: any) {
       if (user?.email) {
         try {
           const dbUser = await db.getUserByEmail(user.email);
@@ -104,7 +107,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (session.user) {
         session.user.id = (token.id as number) || 0;
         session.user.role = (token.role as 'admin' | 'user') || 'user';
@@ -112,7 +115,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session;
     },
-    async redirect({ url, baseUrl }) {
+    async redirect({ url, baseUrl }: any) {
       // If url is relative, prepend baseUrl
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       // If url is on same origin, return it
