@@ -43,13 +43,14 @@ export default async function DashboardPage() {
             Welcome, {session.user.name || session.user.email}!
           </p>
           <p className="text-gray-600">ELO: {Math.round(Number(currentElo))}</p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <p className="text-sm text-gray-500">Role: {session.user.role}</p>
             {session.user.role === 'admin' && (
               <Link 
                 href="/dashboard/admin" 
-                className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+                className="inline-flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm shadow-md hover:shadow-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 transform hover:scale-105"
               >
+                <span className="text-base">👑</span>
                 Admin Panel
               </Link>
             )}
