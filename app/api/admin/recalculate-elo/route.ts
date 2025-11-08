@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth-guards';
 import { db } from '@/lib/db';
-import { calculateElo } from '@/lib/elo';
 
 // Admin-only endpoint to recalculate all ELO ratings
 export async function POST() {
