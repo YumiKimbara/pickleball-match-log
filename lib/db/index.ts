@@ -80,13 +80,6 @@ export const db = {
     return result.rows[0];
   },
 
-  async updateUserPhoto(userId: number, photoUrl: string): Promise<void> {
-    await sql`
-      UPDATE users SET photo_url = ${photoUrl}, updated_at = NOW()
-      WHERE id = ${userId}
-    `;
-  },
-
   async updateUserElo(userId: number, newElo: number): Promise<void> {
     await sql`
       UPDATE users SET elo = ${newElo}, updated_at = NOW()
