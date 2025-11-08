@@ -16,7 +16,13 @@ async function confirmLinking(formData: FormData) {
   const opponent = invite.opponent_id ? await db.getOpponentById(invite.opponent_id) : null;
 
   if (opponent && !opponent.user_id) {
+    // Link the opponent to the user
     await db.linkOpponentToUser(opponent.id, session.user.id);
+    
+    // Sync the user's email to the opponent record
+    if (session.user.email) {
+      await db.updateOpponentEmail(opponent.id, session.user.email);
+    }
   }
 
   await db.redeemInviteToken(invite.id, session.user.id);

@@ -74,7 +74,7 @@ export default function PhotoUploadForm({ matchId }: PhotoUploadFormProps) {
         <p className="text-gray-600 mb-6">Capture this moment with your opponent!</p>
 
         {previewUrl && (
-          <div className="relative w-full aspect-square mb-4 rounded-lg overflow-hidden">
+          <div className="relative w-full aspect-square mb-4 rounded-xl overflow-hidden border-4 border-green-200">
             <Image
               src={previewUrl}
               alt="Preview"
@@ -84,18 +84,22 @@ export default function PhotoUploadForm({ matchId }: PhotoUploadFormProps) {
           </div>
         )}
 
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handleFileChange}
-          className="block w-full h-14 text-base text-gray-700 mb-4 border-2 border-gray-300 rounded-lg px-2
-            file:mr-4 file:py-3 file:px-6
-            file:rounded-full file:border-0
-            file:text-base file:font-bold
-            file:bg-blue-50 file:text-blue-700
-            hover:file:bg-blue-100"
-        />
+        <label className="block w-full h-14 mb-4 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all">
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <div className="flex items-center justify-center h-full text-blue-600 font-semibold">
+            {selectedFile ? (
+              <span>✓ {selectedFile.name}</span>
+            ) : (
+              <span>📁 Choose File</span>
+            )}
+          </div>
+        </label>
 
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -111,7 +115,7 @@ export default function PhotoUploadForm({ matchId }: PhotoUploadFormProps) {
         <button
           onClick={handleUpload}
           disabled={!selectedFile || isUploading}
-          className="w-full h-16 bg-green-600 text-white rounded-lg font-bold text-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+          className="w-full h-16 bg-green-600 text-white rounded-xl font-bold text-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all"
         >
           {isUploading ? "Uploading..." : "📷 Upload Photo"}
         </button>
@@ -119,7 +123,7 @@ export default function PhotoUploadForm({ matchId }: PhotoUploadFormProps) {
         {error && error.includes('Network') ? (
           <button
             onClick={handleRetryLater}
-            className="w-full h-16 mt-3 bg-blue-600 text-white rounded-lg font-bold text-lg hover:bg-blue-700 shadow-lg"
+            className="w-full h-16 mt-3 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700 shadow-lg"
           >
             I'll Add Photo Later
           </button>
@@ -127,7 +131,7 @@ export default function PhotoUploadForm({ matchId }: PhotoUploadFormProps) {
           <button
             onClick={handleSkip}
             disabled={isUploading}
-            className="w-full h-16 mt-3 bg-gray-200 text-gray-900 rounded-lg font-bold text-lg hover:bg-gray-300 disabled:opacity-50 shadow-lg"
+            className="w-full h-16 mt-3 bg-gray-200 text-gray-900 rounded-xl font-bold text-lg hover:bg-gray-300 disabled:opacity-50 shadow-lg"
           >
             Skip
           </button>

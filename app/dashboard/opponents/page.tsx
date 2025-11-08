@@ -12,6 +12,12 @@ export default async function OpponentsPage() {
     ? await db.getAllOpponents()
     : await db.getOpponentsByCreator(session.user.id);
 
+  // Debug: Log to see what photo_urls we're getting
+  console.log('Opponents with photos:', opponents.map(o => ({
+    name: o.name,
+    photo_url: o.photo_url
+  })));
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <OpponentsCache opponents={opponents} />

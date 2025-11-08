@@ -7,7 +7,22 @@ export async function GET() {
   try {
     await requireAdmin();
     const opponents = await db.getAllOpponents();
-    return NextResponse.json({ opponents });
+    
+    // For linked opponents, fetch the user's email
+    const opponentsWithUserEmail = await Promise.all(
+      opponents.map(async (opponent) => {
+        if (opponent.user_id) {
+          const user = await db.getUserById(opponent.user_id);
+          return {
+            ...opponent,
+            linked_user_email: user?.email || null,
+          };
+        }
+        return opponent;
+      })
+    );
+    
+    return NextResponse.json({ opponents: opponentsWithUserEmail });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || 'Failed to fetch opponents' },

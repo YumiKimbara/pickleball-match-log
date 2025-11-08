@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getAvatarUrl } from "@/lib/avatar";
 
 interface Opponent {
   id: number;
   name: string;
+  email: string | null;
   photo_url: string | null;
+  elo: number;
 }
 
 interface User {
@@ -96,14 +99,30 @@ export default function MatchLogger({ user, opponents }: { user: User; opponents
             </a>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {opponents.map((opp) => (
               <button
                 key={opp.id}
                 onClick={() => setSelectedOpponent(opp)}
-                className="w-full h-16 bg-white rounded-xl shadow-sm px-4 flex items-center gap-4 hover:bg-gray-50 active:bg-gray-100"
+                className="w-full bg-white rounded-xl shadow-sm p-4 flex items-center gap-4 hover:bg-gray-50 active:bg-gray-100 transition-all"
               >
-                <span className="font-semibold">{opp.name}</span>
+                <img
+                  src={getAvatarUrl(opp.photo_url, opp.name, opp.email)}
+                  alt={opp.name}
+                  className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                />
+                <div className="flex-1 text-left">
+                  <div className="font-semibold text-lg text-gray-900">{opp.name}</div>
+                  {opp.email && (
+                    <div className="text-sm text-gray-500">{opp.email}</div>
+                  )}
+                  <div className="text-xs text-gray-400 mt-1">
+                    ELO: {opp.elo}
+                  </div>
+                </div>
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             ))}
           </div>

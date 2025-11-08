@@ -1,6 +1,25 @@
 import { requireAdmin } from '@/lib/auth-guards';
 import { db } from '@/lib/db';
 import Link from 'next/link';
+import { revalidatePath } from 'next/cache';
+import { ADMIN_EMAIL } from '@/lib/constants';
+import DeleteUserButton from './DeleteUserButton';
+
+async function deleteUser(formData: FormData) {
+  'use server';
+  await requireAdmin();
+  
+  const userId = parseInt(formData.get('userId') as string);
+  const userEmail = formData.get('userEmail') as string;
+  
+  // Prevent deleting the admin account
+  if (userEmail === ADMIN_EMAIL) {
+    throw new Error('Cannot delete the admin account');
+  }
+  
+  await db.deleteUser(userId);
+  revalidatePath('/dashboard/admin/users');
+}
 
 export default async function AdminUsersPage() {
   // This ensures only admins can access this page
@@ -46,6 +65,9 @@ export default async function AdminUsersPage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Created
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -76,6 +98,17 @@ export default async function AdminUsersPage() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {new Date(user.created_at).toLocaleDateString()}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  {user.email === ADMIN_EMAIL ? (
+                    <span className="text-gray-400 text-xs">Protected</span>
+                  ) : (
+                    <DeleteUserButton 
+                      userId={user.id}
+                      userEmail={user.email}
+                      onDelete={deleteUser}
+                    />
+                  )}
                 </td>
               </tr>
             ))}

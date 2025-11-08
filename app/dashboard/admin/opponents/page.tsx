@@ -11,6 +11,7 @@ interface Opponent {
   photo_url: string | null;
   user_id: number | null;
   created_by_user_id: number | null;
+  linked_user_email?: string | null;
 }
 
 export default function AdminOpponentsPage() {
@@ -204,7 +205,16 @@ export default function AdminOpponentsPage() {
                       {opponent.name}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {opponent.email || '(none)'}
+                      {opponent.linked_user_email ? (
+                        <div>
+                          <span className="text-green-600 font-medium">{opponent.linked_user_email}</span>
+                          {opponent.email && opponent.email !== opponent.linked_user_email && (
+                            <div className="text-xs text-gray-400">(saved: {opponent.email})</div>
+                          )}
+                        </div>
+                      ) : (
+                        opponent.email || '(none)'
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {Math.round(Number(opponent.elo))}
