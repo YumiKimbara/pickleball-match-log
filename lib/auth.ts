@@ -6,7 +6,9 @@ import { Pool } from "pg";
 import { db } from "./db";
 import { ADMIN_EMAIL } from "./constants";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL 
+});
 
 // @ts-ignore - NextAuth v5 beta type issue
 const NextAuth = NextAuthNamespace.default || NextAuthNamespace;
