@@ -15,6 +15,7 @@ const NextAuth = NextAuthNamespace.default || NextAuthNamespace;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PostgresAdapter(pool),
+  trustHost: true, // Required for NextAuth v5 in production
   session: {
     strategy: "jwt", // Use JWT strategy even with adapter (for custom fields)
   },
